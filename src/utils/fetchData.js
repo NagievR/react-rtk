@@ -1,8 +1,8 @@
 import defineHTTPError from "./defineHTTPError";
 
-const fetchData = async (url, method = "get", dataToSend) => {
+const fetchData = async (url, method = "GET", dataToSend) => {
+  console.log("UPD")
   try {
-    console.log(1);
     const response = await fetch(url, {
       method,
       headers: {
@@ -10,15 +10,14 @@ const fetchData = async (url, method = "get", dataToSend) => {
       },
       body: dataToSend && JSON.stringify(dataToSend),
     });
-    console.log(2, response);
 
     if (!response.ok) {
       throw defineHTTPError(response);
     }
-    console.log(3);
 
     return await response.json(response);
   } catch (error) {
+    console.warn(error)
     throw error;
   }
 };

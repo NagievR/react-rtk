@@ -1,8 +1,8 @@
-import React from 'react'
-import { useLocation } from 'react-router';
+import React from "react";
+import { useLocation } from "react-router";
 
-import MainTitle from '../components/elements/MainTitle/MainTitle';
-import ProductForm from '../components/layout/ProductForm/ProductForm';
+import MainTitle from "../components/elements/MainTitle/MainTitle";
+import ProductForm from "../components/layout/ProductForm/ProductForm";
 
 export default function EditView() {
   const product = useLocation().state;
@@ -10,7 +10,7 @@ export default function EditView() {
   return (
     <div className="container">
       <MainTitle text="Edit view" />
-      <ProductForm {...product} isUpdating />
+      <ProductForm productToUpdate={product} isProductEditing={true} />
     </div>
-  )
+  );
 }

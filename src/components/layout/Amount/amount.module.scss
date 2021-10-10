@@ -1,0 +1,16 @@
+.wrap {
+  display: flex;
+  margin: 5px 0;
+}
+
+.elem {
+  width: 33.3%;
+  margin-right: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:last-child {
+    margin-right: 0;
+  }
+}

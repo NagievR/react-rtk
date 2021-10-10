@@ -1,90 +1,68 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import s from "./productForm.module.scss";
+import validateProductForm from "./validateProductForm";
 import {
   createProduct,
   updateProduct,
   clearResultAfterAsync,
 } from "../../../redux/slices/proudctsSlice";
+
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { useHistory } from "react-router";
 
 import Button from "../../elements/Button/Button";
 import Input from "../../elements/Input/Input";
+import useForm from "../../../hooks/useForm";
+import { getObjectLength } from "../../../utils/getObjectLength";
 
-const labels = {
-  title: "Title",
-  price: "Price",
-  description: "Description",
-};
-
-const initialForm = {
-  title: "",
-  price: 0,
-  description: "",
-  inCart: false,
-};
-
-export default function ProductForm({
-  description,
-  title,
-  price,
-  isUpdating,
-  id,
-}) {
-  // const [formIsValid, setFormIsValid] = useState(false);
-  const [form, setForm] = useState(initialForm);
+export default function ProductForm({ productToUpdate, isProductEditing }) {
   const dispatch = useDispatch();
   const history = useHistory();
   const { isLoading, error, resultAfterAsync } = useSelector(
     (state) => state.products
   );
+  const { clearForm, handleChange, handleSubmit, values, errors } = useForm(
+    handleSaving,
+    validateProductForm,
+    defineInitialForm()
+  );
+
+  const returnHome = useCallback(() => history.push("/"), [history]);
 
   useEffect(() => {
     if (resultAfterAsync?.id) {
       alert("Success");
       returnHome();
       dispatch(clearResultAfterAsync());
+      clearForm();
     }
-  }, [resultAfterAsync]);
+  }, [resultAfterAsync, dispatch, clearForm, returnHome]);
 
-  // useEffect(() => {
-  //   console.log(form)
-  //   if (form.title && form.description && form.price) {
-  //     setFormIsValid(true);
-  //   } else {
-  //     setFormIsValid(false);
-  //   }
-  // }, [form]);
-
-  const handleValue = (event) => {
-    const targ = event.target;
-    switch (targ.name) {
-      case labels.title:
-        setForm({ ...form, title: targ.value });
-        break;
-      case labels.price:
-        setForm({ ...form, price: parseInt(targ.value) });
-        break;
-      case labels.description:
-        setForm({ ...form, description: targ.value });
-        break;
-      default:
-        console.error("no such case");
+  useEffect(() => {
+    if (isProductEditing && !productToUpdate) {
+      returnHome();
     }
-  };
+  }, [productToUpdate, isProductEditing, returnHome]);
 
-  const returnHome = () => history.push("/");
+  function defineInitialForm() {
+    if (!productToUpdate) {
+      return {};
+    }
+    return {
+      title: productToUpdate.title,
+      price: productToUpdate.price,
+      description: productToUpdate.description,
+    };
+  }
 
-  const handleSaving = () => {
-    if (isUpdating) {
-      dispatch(updateProduct({ id, dataToUpdate: form }));
+  function handleSaving() {
+    if (productToUpdate) {
+      dispatch(updateProduct({ id: productToUpdate.id, dataToUpdate: values }));
     } else {
-      dispatch(createProduct(form));
+      dispatch(createProduct(values));
     }
-    alert("Success");
-    returnHome();
-  };
+  }
 
   if (error) {
     alert(error);
@@ -96,39 +74,35 @@ export default function ProductForm({
     <section>
       <div className={s.elem}>
         <Input
-          value={title}
-          label={labels.title}
-          action={handleValue}
-          required
-          minLength={3}
-          maxLength={25}
+          externalChangeHandler={handleChange}
+          externalValue={values.title}
+          inputError={errors.title}
+          name="title"
         />
       </div>
       <div className={s.elem}>
         <Input
-          value={price}
-          label={labels.price}
-          action={handleValue}
-          required
-          number
-          positiveNumber
+          externalChangeHandler={handleChange}
+          externalValue={values.price}
+          inputError={errors.price}
+          name="price"
+          type="number"
         />
       </div>
       <div className={s.elem}>
         <Input
-          value={description}
-          label={labels.description}
-          action={handleValue}
-          required
-          minLength={3}
+          externalChangeHandler={handleChange}
+          externalValue={values.description}
+          inputError={errors.description}
+          name="description"
         />
       </div>
       <Button
-        disabled={isLoading}
+        disabled={isLoading || getObjectLength(errors)}
         preloader={isLoading}
         text="Save"
         width={100}
-        action={handleSaving}
+        callback={handleSubmit}
       />
     </section>
   );

@@ -3,10 +3,13 @@ import CreateView from "./pages/create-view";
 import EditView from "./pages/edit-view";
 import MainView from "./pages/main-view";
 import CartView from "./pages/cart-view";
+import Header from "./components/layout/Header/Header";
+
 
 function App() {
   return (
     <main>
+      <Header />
       <Switch>
         <Route exact path="/">
           <MainView />

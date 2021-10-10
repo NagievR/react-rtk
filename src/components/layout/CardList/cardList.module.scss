@@ -1,6 +1,6 @@
 .list {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, calc(20% - 8px));
   grid-gap: 10px;
   margin-bottom: 20px;
 }
@@ -16,4 +16,16 @@
   background-color: #f6f6f6;
   height: 470px;
   margin-bottom: 20px;
+}
+
+@media (max-width: 1024px) {
+  .list {
+    grid-template-columns: repeat(3, calc(33.3% - 8px));
+  }
+}
+
+@media (max-width: 767px) {
+  .list {
+    grid-template-columns: repeat(1, 100%);
+  }
 }

@@ -12,6 +12,7 @@ const initialState = {
     currentPage: 1,
     totalPages: 1,
     perPage: 10,
+    lastPage: 1,
   },
 };
 
@@ -65,7 +66,7 @@ export const deleteProduct = createAsyncThunk(
 
 export const updateProduct = createAsyncThunk(
   "products/updateProduct",
-  async ({ id, dataToUpdate }, { rejectWithValue }) => {
+  async ({ dataToUpdate, id }, { rejectWithValue }) => {
     try {
       const data = await fetchData(
         `${process.env.REACT_APP_SERVER_URL}/products/${id}`,
@@ -81,16 +82,23 @@ export const updateProduct = createAsyncThunk(
 );
 
 // Move this to another file:
-const createPagination = (state, isTempList = true, fromPage = 1) => {
+const createPagination = (state, notMainList = true, fromPage = 1) => {
   const pagin = state.pagination;
   const perPage = pagin.perPage;
   const pageNumber = fromPage ?? pagin.currentPage;
 
-  const toPaginate = isTempList ? state.list : state.mainList;
-  const from = perPage * (pageNumber - 1);
-  const to = perPage * pageNumber;
+  const toPaginate = notMainList ? state.list : state.mainList;
+  const totalPages = Math.ceil(toPaginate.length / perPage);
+  let from = perPage * (pageNumber - 1);
+  let to = perPage * pageNumber;
 
-  pagin.totalPages = Math.ceil(toPaginate.length / perPage);
+  if (fromPage > totalPages) {
+    from = perPage * (totalPages - 1);
+    to = perPage * totalPages;
+    fromPage = totalPages;
+  }
+
+  pagin.totalPages = totalPages;
   pagin.currentPage = fromPage;
   state.paginatedList = toPaginate.slice(from, to);
 };
@@ -109,9 +117,14 @@ const productsSlice = createSlice({
       state.list = state.mainList.filter((product) => {
         const productTitle = product.title.toLowerCase();
         const searchFor = action.payload.toLowerCase();
-        return productTitle.startsWith(searchFor);
+        return productTitle.includes(searchFor);
       });
       createPagination(state, true);
+    },
+
+    updateProductList(state, action) {
+      state.list = action.payload;
+      state.mainList = action.payload;
     },
 
     clearResultAfterAsync(state) {
@@ -146,21 +159,30 @@ const productsSlice = createSlice({
     },
     [createProduct.fulfilled]: (state, action) => {
       state.isLoading = false;
-      state.resultAfterAsync = action.payload;
+      const newProduct = action.payload;
+      state.resultAfterAsync = newProduct;
+      state.mainList.push(newProduct);
+      state.list.push(newProduct);
+      createPagination(state, false, state.pagination.currentPage);
     },
 
     // deleteProduct
     [deleteProduct.pending]: (state) => {
+      state.isLoading = true;
       state.error = null;
     },
     [deleteProduct.rejected]: (state, action) => {
+      state.isLoading = true;
       state.error = action.payload;
     },
     [deleteProduct.fulfilled]: (state, action) => {
-      state.mainList = state.mainList.filter(
+      state.isLoading = false;
+      const updatedList = state.mainList.filter(
         (prod) => prod.id !== action.payload
       );
-      createPagination(state, false, state.pagination.currentPage);
+      state.mainList = updatedList;
+      state.list = updatedList;
+      createPagination(state, true, state.pagination.currentPage);
     },
 
     // updateProduct
@@ -172,12 +194,24 @@ const productsSlice = createSlice({
       state.isLoading = false;
       state.error = action.payload;
     },
-    [updateProduct.fulfilled]: (state) => {
+    [updateProduct.fulfilled]: (state, action) => {
       state.isLoading = false;
+      const updatedProduct = action.payload;
+      state.resultAfterAsync = updatedProduct;
+      const updatedList = state.mainList.map((prod) =>
+        prod.id === updatedProduct.id ? updatedProduct : prod
+      );
+      state.mainList = updatedList;
+      state.list = updatedList;
+      createPagination(state, true, state.pagination.currentPage);
     },
   },
 });
 
 export default productsSlice.reducer;
-export const { changePage, filterByTitle, clearResultAfterAsync } =
-  productsSlice.actions;
+export const {
+  changePage,
+  filterByTitle,
+  clearResultAfterAsync,
+  updateProductList,
+} = productsSlice.actions;

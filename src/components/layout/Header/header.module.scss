@@ -1,0 +1,41 @@
+.container {
+  border-bottom: 1px solid rgba(34, 36, 38, 0.15);
+  padding: 10px 0;
+  height: 50px;
+  margin-bottom: 20px;
+  background: rgba(240, 240, 240, 0.342);
+}
+
+.logo {
+  text-transform: uppercase;
+  font-weight: 900;
+  font-size: 22px;
+}
+
+.inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.icon {
+  img {
+    height: 24px;
+    width: 24px;
+  }
+}
+
+.rightBlock {
+  display: flex;
+  align-items: center;
+}
+
+.sum {
+  margin-right: 10px;
+  font-size: 14px;
+  font-weight: 600;
+
+  &::after {
+    content: '$';
+  }
+}

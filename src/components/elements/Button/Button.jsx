@@ -3,21 +3,20 @@ import s from "./button.module.scss";
 
 export default function Button({
   text,
-  action,
+  callback,
   disabled,
   preloader,
   width = "",
 }) {
-  const callAction = () => {
-    if (!disabled && !preloader && action) {
-      action();
+  const callCallback = () => {
+    if (!disabled && !preloader && callback) {
+      callback();
     }
   };
-
   return (
     <button
       className={`${s.btn} ${disabled ? s.disabled : ""}`}
-      onClick={callAction}
+      onClick={callCallback}
       style={{ width: width ?? `${width}px` }}
     >
       {(preloader && <div className="preloader" />) || text}

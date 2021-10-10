@@ -11,6 +11,10 @@
   &::placeholder {
     color: rgba(0, 0, 0, 0.411);
   }
+
+  &.inputError {
+    border-color: #b92a28;
+  }
 }
 
 .wrap {
@@ -24,7 +28,7 @@
   font-size: 12px;
   color: #b92a28;
   z-index: 5;
-  bottom: -12px;
+  bottom: -13px;
 }
 
 .label {

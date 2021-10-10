@@ -1,61 +1,85 @@
-import React, { useEffect, useState } from "react";
-import useValidation from "../../../hooks/useInputValidation";
+import React, { useState } from "react";
 import s from "./input.module.scss";
 
-export default function Input({
-  placeholder,
-  action,
-  label,
-  width,
-  required,
-  minLength,
-  maxLength,
-  number,
-  positiveNumber,
-  value
-}) {
-  const [inputValue, setInputValue] = useState(value);
-  const { inputError, checkValidity, removeErrors } = useValidation({
-    required,
-    minLength,
-    maxLength,
-  });
-
-  useEffect(() => {
-    console.log(inputValue);
-  }, [inputValue]);
-
-  const handleChange = (event) => {
-    let value = event.target.value;
-    
-    if (number && positiveNumber) {
-      value = Math.abs(value);
+const shouldComponentUpdate = (prevProps, nextProps) => {
+  for (let key in prevProps) {
+    if (
+      typeof prevProps[key] === "function" ||
+      typeof nextProps[key] === "function"
+    ) {
+      continue;
+    } else if (prevProps[key] !== nextProps[key]) {
+      return false;
     }
+  }
+  return true;
+};
 
-    setInputValue(value);
+const Input = React.memo(
+  ({
+    type,
+    name,
+    label,
+    width,
+    callback,
+    inputError,
+    placeholder,
+    externalValue,
+    externalChangeHandler,
+  }) => {
+    const [localValue, setLocalValue] = useState("");
+    const hasExternalHandler = !!externalChangeHandler;
 
-    // if (inputError) {
-    //   removeErrors();
-    //   return;
-    // }
+    const handleChange = (event) => {
+      if (hasExternalHandler) {
+        externalChangeHandler(event);
+      } else {
+        setLocalValue(event.target.value);
+      }
+      callback && callback(event);
+    };
 
-    action(event);
-  };
+    const getValue = () => {
+      if (hasExternalHandler) {
+        return externalValue || "";
+      } else {
+        return localValue;
+      }
+    };
 
-  return (
-    <div className={s.wrap} style={{ width: width ?? `${width}px` }}>
-      {label && <div className={s.label}>{label}</div>}
-      <input
-        name={label ?? label}
-        value={inputValue}
-        className={s.input}
-        placeholder={placeholder}
-        type={number ? "number" : "text"}
-        onChange={handleChange}
-        // onBlur={() => checkValidity(inputValue)}
-        // onFocus={() => checkValidity(inputValue)}
-      />
-      {inputError && <div className={s.error}>{inputError}</div>}
-    </div>
-  );
-}
+    const getCustomStyles = () => {
+      return { width: width ? `${width}px` : "" };
+    };
+
+    const getType = () => {
+      const availableTypes = ["text", "number"];
+
+      if (availableTypes.includes(type)) {
+        return type;
+      } else if (type) {
+        console.warn(`type "${type}" is not provided. you can add it yourself`);
+      }
+      return availableTypes[0];
+    };
+
+    return (
+      <div className={s.wrap} style={getCustomStyles()}>
+        {label && <div className={s.label}>{label}</div>}
+        <input
+          className={`${s.input} ${inputError ? s.inputError : ""}`}
+          name={name || ""}
+          value={getValue()}
+          type={getType()}
+          onChange={handleChange}
+          placeholder={placeholder}
+          autoComplete="off"
+        />
+        {inputError && <div className={s.error}>{inputError}</div>}
+      </div>
+    );
+  },
+
+  shouldComponentUpdate
+);
+
+export default Input;

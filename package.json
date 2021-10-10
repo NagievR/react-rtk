@@ -1,11 +1,11 @@
 {
-  "name": "react-only",
+  "name": "test-task",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
     "@reduxjs/toolkit": "^1.6.2",
-    "json-server": "^0.16.3",
     "concurrently": "^6.3.0",
+    "json-server": "^0.16.3",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.5",

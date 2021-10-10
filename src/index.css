@@ -41,6 +41,11 @@ h3 {
   text-align: center;
 }
 
+img,
+svg {
+  display: inline-block;
+}
+
 .preloader {
   border: 2px solid #e2e2e2; 
   border-top: 2px solid #afafaf; 
